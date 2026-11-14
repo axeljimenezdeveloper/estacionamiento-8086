@@ -9,9 +9,8 @@
 .DATA
     CAPACIDAD           EQU 20
 
-    ; Arreglo de eventos: 1 = entrada, -1 = salida
-    eventos             DB  1, 1, -1, 1, -1, 1, 1, -1, 1, 1
-    LONGITUD            EQU 10
+    ; Arreglo de eventos (definido en src\eventos.inc, sobrescrito por test.ps1)
+    INCLUDE src\eventos.inc
 
     ocupacion           DB  0
     puestos_ocupados    DB  ?
@@ -25,6 +24,7 @@ inicio:
     ; ---- Inicializar recorrido ----
     LEA SI, eventos         ; SI = puntero al arreglo
     MOV CX, LONGITUD        ; CX = cantidad de eventos
+    JCXZ .fin               ; si CX = 0, saltar al final
 
 bucle:
     MOV AL, [SI]            ; cargar evento actual
@@ -49,6 +49,7 @@ bucle:
     INC SI
     LOOP bucle
 
+.fin:
     ; ---- Resultados finales ----
     MOV AL, ocupacion
     MOV puestos_ocupados, AL       ; ocupados = ocupacion
@@ -56,6 +57,21 @@ bucle:
     MOV AL, CAPACIDAD
     SUB AL, ocupacion
     MOV puestos_disponibles, AL    ; disponibles = 20 - ocupacion
+
+    ; ---- Volcar resultados a stdout (2 bytes binarios) ----
+    ; Permite 'estacion.exe > resultado.bin' desde el shell DOS.
+    ; Bytes: [puestos_ocupados][puestos_disponibles]
+    MOV AH, 40h                    ; DOS write to file handle
+    MOV BX, 1                      ; handle 1 = stdout
+    MOV CX, 1                      ; 1 byte
+    LEA DX, puestos_ocupados
+    INT 21h
+
+    MOV AH, 40h
+    MOV BX, 1
+    MOV CX, 1
+    LEA DX, puestos_disponibles
+    INT 21h
 
     MOV AH, 4Ch
     INT 21h

@@ -17,4 +17,11 @@ foreach ($loc in $locations) {
 Get-ChildItem -Path "build" -Filter "*.log" -File -ErrorAction SilentlyContinue |
     Remove-Item -Force
 
+# Binarios y dumps de test
+Get-ChildItem -Path "build" -Include "*.bin","*.BIN" -File -ErrorAction SilentlyContinue |
+    Remove-Item -Force
+Get-ChildItem -Path "build" -Filter "*.txt" -File -ErrorAction SilentlyContinue |
+    Remove-Item -Force
+
 Write-Host "Listo." -ForegroundColor Green
+

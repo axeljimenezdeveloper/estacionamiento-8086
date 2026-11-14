@@ -1,0 +1,4 @@
+; EXPECT_OCUPADOS = 0
+; EXPECT_DISPONIBLES = 20
+eventos     DB  -1, -1, -1, -1, -1
+LONGITUD    EQU 5

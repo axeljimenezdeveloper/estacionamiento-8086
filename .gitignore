@@ -34,3 +34,8 @@ build/*.log
 build/*.bat
 build/*.conf
 build/output/
+build/*.txt
+
+# Resultados de test (DOS trunca nombres a 8.3, por eso .BIN en mayúsculas)
+build/*.bin
+build/*.BIN
