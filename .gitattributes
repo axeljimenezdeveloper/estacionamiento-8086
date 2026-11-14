@@ -2,17 +2,18 @@
 # Política de finales de línea
 # ==========================================
 
-# Por defecto, Git detecta y normaliza automáticamente
 * text=auto
 
 # Archivos que deben usar LF (Unix)
-*.asm text eol=lf
 *.md  text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
 *.json text eol=lf
 
-# Scripts de Windows que deben usar CRLF (para PowerShell 5.1)
+# MASM 5.x (DOS) requiere CRLF en los .asm
+*.asm text eol=crlf
+
+# Scripts de Windows que deben usar CRLF
 *.ps1 text eol=crlf
 *.psm1 text eol=crlf
 *.bat  text eol=crlf
