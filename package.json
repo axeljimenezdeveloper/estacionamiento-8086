@@ -1,6 +1,6 @@
 {
   "name": "estacionamiento-8086",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "TP Microprocesadores (316) - Modulo III, Unidad 7, Objetivo 7",
   "private": true,
   "scripts": {
@@ -8,6 +8,6 @@
     "test":  "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test.ps1",
     "clean": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean.ps1"
   },
-  "author": "TU NOMBRE",
+  "author": "Axel Jimenez",
   "license": "MIT"
 }
