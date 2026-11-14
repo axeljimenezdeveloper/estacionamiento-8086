@@ -1,0 +1,29 @@
+# Binarios y objetos generados por MASM/TASM
+*.obj
+*.exe
+*.com
+*.lst
+*.map
+*.crf
+*.sbr
+*.ref
+*.ilk
+*.pdb
+*.bak
+*.tmp
+
+# Carpetas de salida
+build/output/
+out/
+
+# Editores / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store
