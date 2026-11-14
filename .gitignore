@@ -27,3 +27,10 @@ out/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Artefactos generados por scripts/build.ps1
+build/*.LOG
+build/*.log
+build/*.bat
+build/*.conf
+build/output/
