@@ -10,7 +10,7 @@
     .\scripts\build.ps1 -Source src/hola.asm
 #>
 param(
-    [string]$Source = "src/hola.asm"
+    [string]$Source = "src/estacion.asm"
 )
 
 . "$PSScriptRoot\lib.ps1"
