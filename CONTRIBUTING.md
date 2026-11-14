@@ -54,4 +54,42 @@ git branch -d feat/nombre-descriptivo
 
 ## Configuración del entorno
 
-_(Se completará en la Fase 1.)_
+### 1. DOSBox 0.74-3
+
+Descargar desde [dosbox.com](https://www.dosbox.com/) e instalar. Ruta típica en Windows 10/11: `C:\Program Files (x86)\DOSBox-0.74-3\DOSBox.exe`.
+
+### 2. MASM 5.00 + LINK 3.60 + DEBUG
+
+Descargar el paquete `8086` desde [shiburaj/masm-dos](https://github.com/shiburaj/masm-dos). Descomprimir en `C:\8086\`. Debe contener:
+
+- `MASM.EXE`, `LINK.EXE`, `DEBUG.EXE`
+- `EDIT.COM`, `EXE2BIN.EXE`, `TASM.EXE`, `TD.EXE`
+
+### 3. PowerShell
+
+Windows 10/11 ya lo incluye. Verificar con:
+
+```powershell
+$PSVersionTable.PSVersion
+```
+
+Debe ser ≥ 5.1.
+
+### 4. Node.js (opcional)
+
+Solo necesario para usar `npm run`. Descargar desde [nodejs.org](https://nodejs.org/). Alternativa: ejecutar los scripts directamente con `.\scripts\build.ps1`.
+
+### 5. Verificar instalación
+
+```powershell
+cd C:\Development\UNAProjects\estacionamiento-8086
+npm run build
+npm run test
+```
+
+Esperado: `OK: estacion.exe generado` + `8 PASS / 0 FAIL`.
+
+### 6. Convenciones de rutas
+
+- Los nombres de archivos que MASM/LINK lean o escriban deben ser **8.3** (≤8 caracteres + extensión). Ej: `estacion.asm`, `result.bin`, `masm.log`.
+- Los nombres largos que solo PowerShell manipule no tienen esa restricción.
