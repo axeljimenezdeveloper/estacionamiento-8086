@@ -3,11 +3,12 @@
     Ejecuta los 8 casos de prueba contra estacion.exe.
 .DESCRIPTION
     Para cada tests/vectors/case-*.inc:
-      1. Sustituye src/eventos.inc con el caso
-      2. Compila, enlaza y ejecuta 'estacion.exe > result.bin'
-      3. Lee los 2 bytes de result.bin
-      4. Compara con EXPECT_OCUPADOS y EXPECT_DISPONIBLES
-      5. Restaura src/eventos.inc
+      1. Extrae eventos y LONGITUD del vector
+      2. Sustituye por regex el bloque eventos DB ... en src/estacion.asm
+      3. Compila, enlaza y ejecuta 'estacion.exe > result.bin'
+      4. Lee los 2 bytes iniciales de result.bin
+      5. Compara con EXPECT_OCUPADOS y EXPECT_DISPONIBLES
+      6. Restaura src/estacion.asm original
 #>
 param(
     [string]$Pattern = "tests/vectors/case-*.inc"
@@ -29,9 +30,8 @@ if (-not $dosbox) { Write-Host "ERROR: DOSBox no encontrado." -ForegroundColor R
 $cases = @(Get-ChildItem $Pattern | Sort-Object Name)
 if ($cases.Count -eq 0) { Write-Host "ERROR: No hay casos en $Pattern" -ForegroundColor Red; exit 1 }
 
-$originalInc = Join-Path $projectRoot "src\eventos.inc"
-$backupInc   = Join-Path $projectRoot "src\eventos.inc.orig"
-Copy-Item $originalInc $backupInc -Force
+$asmPath     = Join-Path $projectRoot "src\estacion.asm"
+$originalAsm = Get-Content $asmPath -Raw
 
 $results = @()
 $pass = 0
@@ -47,10 +47,32 @@ foreach ($case in $cases) {
     if ($content -notmatch 'EXPECT_DISPONIBLES\s*=\s*(\d+)') { Write-Host "  SKIP: sin EXPECT_DISPONIBLES" -ForegroundColor Yellow; continue }
     $expDisponibles = [int]$matches[1]
 
-    Write-Host "  Esperado: ocupados=$expOcupados, disponibles=$expDisponibles" -ForegroundColor DarkGray
+    if ($content -notmatch 'LONGITUD\s+EQU\s+(\d+)') { Write-Host "  SKIP: sin LONGITUD" -ForegroundColor Yellow; continue }
+    $longitud = [int]$matches[1]
 
-    Copy-Item $case.FullName $originalInc -Force
+    # Extraer lineas eventos: DB ... o LABEL BYTE
+    $dbLines = ($content -split "`r?`n") | Where-Object { $_ -match '^\s*eventos\s+(DB\s+.+|LABEL\s+BYTE)' }
+    if ($dbLines.Count -eq 0) { Write-Host "  SKIP: sin bloque eventos DB/LABEL" -ForegroundColor Yellow; continue }
 
+    $dbBody = ''
+    foreach ($line in $dbLines) {
+        if ($line -match 'DB\s+(.+)$') {
+            $dbBody += $matches[1].Trim()
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($dbBody)) {
+        $dbBody = '0'   # placeholder para LONGITUD=0
+    }
+
+    Write-Host "  Esperado: ocupados=$expOcupados, disponibles=$expDisponibles (LONGITUD=$longitud)" -ForegroundColor DarkGray
+
+    # Sustituir bloque (regex con \s* para tolerar indentacion)
+    $modifiedAsm = $originalAsm
+    $modifiedAsm = $modifiedAsm -replace '(?m)^\s*eventos\s+DB\s+[^\r\n]+', "    eventos             DB  $dbBody"
+    $modifiedAsm = $modifiedAsm -replace '(?m)^\s*LONGITUD\s+EQU\s+\d+',      "    LONGITUD            EQU $longitud"
+    [System.IO.File]::WriteAllText($asmPath, $modifiedAsm, (New-Object System.Text.UTF8Encoding $false))
+
+    # Generar run-test.bat
     $batContent = @"
 @echo off
 cd ..\
@@ -87,7 +109,10 @@ exit
 
     & $dosbox -conf (Join-Path $projectRoot "build\test-dosbox.conf") -exit | Out-Null
 
-    # DOS trunca a 8.3, asi que el archivo puede llamarse result.bin o RESULT.BIN
+    # Restaurar .asm original
+    [System.IO.File]::WriteAllText($asmPath, $originalAsm, (New-Object System.Text.UTF8Encoding $false))
+
+    # Buscar result.bin (DOS trunca a 8.3)
     $resultPath = $null
     foreach ($name in @("result.bin","RESULT.BIN")) {
         $candidate = Join-Path $projectRoot "build\$name"
@@ -103,7 +128,7 @@ exit
 
     $bytes = [System.IO.File]::ReadAllBytes($resultPath)
     if ($bytes.Length -lt 2) {
-        Write-Host "  FAIL: result.bin tiene $($bytes.Length) bytes (esperados 2)" -ForegroundColor Red
+        Write-Host "  FAIL: result.bin tiene $($bytes.Length) bytes (esperados >=2)" -ForegroundColor Red
         $fail++
         $results += [PSCustomObject]@{ Case=$caseName; Status="FAIL"; Ocupados=-1; Disponibles=-1; Reason="short output" }
         continue
@@ -122,8 +147,6 @@ exit
         $results += [PSCustomObject]@{ Case=$caseName; Status="FAIL"; Ocupados=$gotOcupados; Disponibles=$gotDisponibles; Reason="mismatch" }
     }
 }
-
-Move-Item $backupInc $originalInc -Force
 
 Write-Host "`n========================================" -ForegroundColor Cyan
 Write-Host "Resumen: $pass PASS / $fail FAIL" -ForegroundColor $(if ($fail -eq 0) { "Green" } else { "Red" })

@@ -30,14 +30,15 @@ LONGITUD    EQU 21
 
 `scripts/test.ps1` para cada vector:
 
-1. Copia el `.inc` a `src/eventos.inc`.
-2. Compila con MASM y LINK (en DOSBox, vía `build/run-test.bat`).
-3. Ejecuta `estacion.exe > build\result.bin` (redirección de stdout).
-4. Lee los **2 bytes** del resultado: `[puestos_ocupados][puestos_disponibles]`.
-5. Compara con las expectativas y reporta PASS/FAIL.
-6. Restaura `src/eventos.inc` al estado original.
+1. Lee el vector `.inc` y extrae `eventos` y `LONGITUD` (soporta `DB` y `LABEL BYTE`).
+2. Sustituye por regex el bloque `eventos DB ...` y `LONGITUD EQU N` en `src/estacion.asm`.
+3. Compila con MASM y LINK (en DOSBox, vía `build/run-test.bat`).
+4. Ejecuta `estacion.exe > build\result.bin` (redirección de stdout).
+5. Lee los **2 bytes iniciales** del resultado: `[puestos_ocupados][puestos_disponibles]`.
+6. Compara con las expectativas y reporta PASS/FAIL.
+7. Restaura `src/estacion.asm` al estado original.
 
-El programa `estacion.asm` escribe los resultados a stdout con `INT 21h, AH=40h` (DOS write to handle), lo que permite automatización sin depender de `DEBUG`.
+El programa `estacion.asm` escribe los resultados a stdout con `INT 21h/AH=40h`, y luego imprime el texto formateado con `INT 21h/AH=09h` (visible al usuario). La redirección `> result.bin` captura ambos: el runner lee solo los 2 primeros bytes.
 
 ## Verificación complementaria con DEBUG
 

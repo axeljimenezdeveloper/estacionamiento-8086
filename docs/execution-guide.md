@@ -152,3 +152,40 @@ Con `eventos = 1, 1, -1, 1, -1, 1, 1, -1, 1, 1`:
 **Resultado final:** ocupados=4, disponibles=16.
 
 Verificable bajo `DEBUG` con `d ds:0`: los bytes `04 04 10` deben aparecer secuencialmente.
+
+
+## 8. Salida al usuario
+
+El programa produce **dos tipos de salida** en stdout:
+
+1. **Bytes binarios** (`[puestos_ocupados][puestos_disponibles]`) al inicio — invisibles al ojo, consumidos por `scripts/test.ps1` cuando se redirige con `estacion.exe > result.bin`.
+2. **Texto formateado** vía `INT 21h/AH=09h` + `INT 21h/AH=02h`:
+
+```
+OCUPADOS: 4
+DISPONIBLES: 16
+```
+
+La rutina `print_al` convierte el byte en `AL` a su representación decimal (rango 0-99) usando `DIV` por 10 y sumando `'0'` (0x30) a cada dígito. Preserva todos los registros (`PUSH`/`POP` de `AX`, `BX`, `CX`, `DX`).
+
+## 9. Prueba del "profesor perezoso"
+
+El programa es **autocontenido**: `estacion.asm` no requiere archivos `.inc` externos. Para verificarlo, basta copiar **solo el `.asm`** a una carpeta limpia y compilar desde DOSBox:
+
+```
+mount c "C:\Temp\professor-test"
+mount d "C:\8086"
+c:
+d:\masm.exe estacion.asm, estacion.obj;
+d:\link.exe estacion.obj, estacion.exe;
+estacion.exe
+```
+
+**Salida esperada en pantalla:**
+
+```
+OCUPADOS: 4
+DISPONIBLES: 16
+```
+
+Esto garantiza que el programa puede evaluarse con solo el archivo fuente, sin clonar el repo ni instalar Node.js.

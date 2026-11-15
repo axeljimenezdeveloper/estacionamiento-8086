@@ -17,7 +17,7 @@ Recorrer secuencialmente un arreglo de eventos en memoria y calcular:
 1. **Puestos ocupados** — ocupación actual del estacionamiento.
 2. **Puestos disponibles** — `CAPACIDAD - ocupados`.
 
-Ambos resultados quedan almacenados en memoria al finalizar la ejecución.
+Ambos resultados quedan almacenados en memoria al finalizar la ejecución y se muestran en pantalla.
 
 ## Reglas de negocio
 
@@ -44,8 +44,7 @@ estacionamiento-8086/
 │   ├── algorithm-design.md    # Análisis de casos límite y mapeo de registros
 │   └── execution-guide.md     # Explicación paso a paso de la ejecución
 ├── src/
-│   ├── estacion.asm           # Programa principal
-│   ├── eventos.inc            # Arreglo parametrizable (sobrescrito por test.ps1)
+│   ├── estacion.asm           # Programa principal (autocontenido)
 │   └── hola.asm               # Smoke test de la toolchain
 ├── tests/
 │   ├── test-cases.md          # Documentación de resultados
@@ -87,6 +86,8 @@ Genera `estacion.exe` en la raíz del proyecto. Logs en `build/masm.log` y `buil
 
 ### Ejecutar el programa
 
+El programa es **autocontenido**: `estacion.asm` compila y ejecuta sin dependencias externas. Basta copiar el `.asm` a cualquier entorno con MASM/DOSBox (o emu8086) y compilarlo.
+
 Desde DOSBox manualmente:
 
 ```
@@ -95,21 +96,14 @@ c:
 estacion.exe
 ```
 
-El programa escribe los 2 bytes de resultado (`[ocupados][disponibles]`) a `stdout`. Para verlos formateados, ejecuta bajo `DEBUG`:
+**Salida esperada en pantalla:**
 
 ```
-d:\debug.exe estacion.exe
--u
--g
--d ds:0
--q
+OCUPADOS: 4
+DISPONIBLES: 16
 ```
 
-O redirige a un archivo:
-
-```
-estacion.exe > resultado.bin
-```
+Si necesitas redirigir la salida binaria a un archivo (para testing automatizado), usa `estacion.exe > result.bin` — los 2 primeros bytes serán `[ocupados][disponibles]`, seguidos del texto legible.
 
 ### Ejecutar los tests
 
@@ -127,6 +121,7 @@ Compila y ejecuta los 8 casos automatizados. Resultado esperado: `8 PASS / 0 FAI
 - [x] Fase 3 — Implementación incremental
 - [x] Fase 4 — Pruebas y verificación (8/8 PASS)
 - [x] Fase 5 — Documentación final y release
+- [x] v1.0.1 — `.asm` autocontenido + salida legible
 
 ## Documentación adicional
 
